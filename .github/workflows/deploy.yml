@@ -1,0 +1,36 @@
+name: deploy-frontend
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build
+        env:
+          VITE_API_URL: https://codesage-api.centralindia.cloudapp.azure.com
+
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Upload to static website
+        run: |
+          az storage blob upload-batch \
+            --account-name codesagefe4821 \
+            --destination '$web' \
+            --source dist \
+            --overwrite \
+            --auth-mode key
