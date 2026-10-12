@@ -3,3 +3,6 @@ dist
 .env
 .next
 node_modules
+
+.vite/
+.next/
